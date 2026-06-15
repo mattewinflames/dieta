@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Piano Nutrizionale">
+<meta name="theme-color" content="2E7D32">
+<title>Piano Nutrizionale</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --green:    #2E7D32;
+    --green-dk: #1B5E20;
+    --col:  #FFF8E1;  --col-t: #E65100;
+    --spu:  #E8F5E9;  --spu-t: #1B5E20;
+    --pra:  #E3F2FD;  --pra-t: #0D47A1;
+    --mer:  #F3E5F5;  --mer-t: #6A1B9A;
+    --cen:  #FCE4EC;  --cen-t: #880E4F;
+    --bg:   #F0F4F0;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bot: env(safe-area-inset-bottom);
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--green);
+    padding: calc(var(--safe-top) + 14px) 16px 10px;
+    flex-shrink: 0;
+  }
+  header h1 { color: #fff; font-size: 1.05rem; font-weight: 700; }
+  header p  { color: rgba(255,255,255,0.72); font-size: 0.72rem; margin-top: 2px; }
+
+  /* ── DAY TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--green-dk);
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    padding: 9px 14px;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: color .15s;
+  }
+  .tab.active { color: #A5D6A7; border-bottom-color: #A5D6A7; }
+
+  /* ── SCROLL AREA ── */
+  .panels {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 12px calc(var(--safe-bot) + 12px);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── MEAL CARD ── */
+  .meal {
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.09);
+  }
+  .meal-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .meal-head .ico { font-size: 1.15rem; }
+  .meal-body {
+    background: #fff;
+    padding: 10px 13px;
+  }
+  .meal-body li {
+    list-style: none;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    padding: 4px 0 4px 14px;
+    position: relative;
+    border-bottom: 1px solid #f2f2f2;
+    color: #212121;
+  }
+  .meal-body li:last-child { border-bottom: none; }
+  .meal-body li::before { content:'•'; position:absolute; left:2px; color:#bbb; }
+
+  .col .meal-head { background: var(--col); color: var(--col-t); }
+  .spu .meal-head { background: var(--spu); color: var(--spu-t); }
+  .pra .meal-head { background: var(--pra); color: var(--pra-t); }
+  .mer .meal-head { background: var(--mer); color: var(--mer-t); }
+  .cen .meal-head { background: var(--cen); color: var(--cen-t); }
+
+  .or {
+    display: inline-block;
+    background: #ECEFF1; color: #607D8B;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px;
+    margin: 0 2px; vertical-align: middle;
+    text-transform: uppercase;
+  }
+  .tag {
+    display: inline-block;
+    background: #E8F5E9; color: #2E7D32;
+    font-size: 0.66rem; font-weight: 600;
+    padding: 1px 6px; border-radius: 20px;
+    margin-left: 3px;
+  }
+  .tag.w { background:#FFF3E0; color:#E65100; }
+  .tag.c { background:#E3F2FD; color:#0D47A1; }
+
+  .free-cena {
+    text-align: center;
+    padding: 18px 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #880E4F;
+    background: #fff;
+  }
+
+  /* ── NOTE ── */
+  .note-box {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.09);
+    margin-bottom: 10px;
+  }
+  .note-head {
+    background: #37474F; color: #fff;
+    padding: 9px 13px;
+    font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .note-row {
+    display: flex; gap: 9px;
+    padding: 9px 13px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 0.82rem; line-height: 1.5;
+    align-items: flex-start;
+  }
+  .note-row:last-child { border-bottom: none; }
+  .note-row .e { font-size: 1.05rem; flex-shrink: 0; }
+
+  /* ── BOTTOM NAV (optional day quick-jump) ── */
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🥗 Piano Nutrizionale</h1>
+  <p>Samantha · tocca il giorno</p>
+</header>
+
+<div class="tabs" id="tabs">
+  <div class="tab active"  onclick="go(0)">Lun</div>
+  <div class="tab"         onclick="go(1)">Mar</div>
+  <div class="tab"         onclick="go(2)">Mer</div>
+  <div class="tab"         onclick="go(3)">Gio</div>
+  <div class="tab"         onclick="go(4)">Ven</div>
+  <div class="tab"         onclick="go(5)">Sab</div>
+  <div class="tab"         onclick="go(6)">Dom</div>
+  <div class="tab"         onclick="go(7)">📋</div>
+</div>
+
+<div class="panels" id="panels">
+
+<!-- ═══ LUNEDÌ ═══ -->
+<div class="panel active">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>1–2 Muffin Cheto <span class="or">o</span> dolce Cheto (ricetta Eleonora) <span class="or">o</span> dolce Cardo</li>
+      <li>+ tè verde o tisana</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>1 frutto (150g) <span class="or">o</span> ghiacciolo fatto in casa <span class="or">o</span> frullato</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo</div>
+    <ul class="meal-body">
+      <li><b>A –</b> 70g pasta di legumi (Legumotti Barilla) con verdure</li>
+      <li><b>B –</b> 60g legumi + 60g riso/pasta/farro/orzo/quinoa <span class="or">o</span> 50g pane / 30g frisa / 2–3 Wasa</li>
+      <li><b>C –</b> 120–130g polpette vegetali (ricetta Eleonora)</li>
+      <li>+ 1 cucchiaio olio EVO · verdure a piacere</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>30g proteine My Protein in 250ml acqua + 10 frutta secca</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li>150g pesce fresco/surgelato <span class="or">o</span> 120–130g Asdomar al naturale</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ MARTEDÌ ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>200ml latte parz. scremato</li>
+      <li>+ 2–4 fette biscottate integrali <span class="or">o</span> 50g pane <span class="or">o</span> cereali</li>
+      <li>+ 2 cucchiaini crema frutta secca 100% <span class="or">o</span> Crema Cardo</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>1 frutto (150g) <span class="or">o</span> ghiacciolo fatto in casa <span class="or">o</span> frullato</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo</div>
+    <ul class="meal-body">
+      <li>70g pasta/riso/farro/orzo <span class="or">o</span> 150–200g patate <span class="or">o</span> 50g pane</li>
+      <li>+ 100g pesce <span class="tag">tonno · salmone · sgombro · fresco</span></li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>15 frutta secca mix (noci, nocciole, mandorle, pistacchi, anacardi NON salati)</li>
+      <li>+ 10g cioccolata fondente 72% Novi</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li>2 uova intere (strapazzate / sode / frittata) con verdure</li>
+      <li>+ 1 cucchiaio olio EVO · verdure a piacere</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ MERCOLEDÌ ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>200ml latte parz. scremato</li>
+      <li>+ 30g Flakes farro "Poggio al farro" <span class="or">o</span> Flakes cacao (anche 15g+15g)</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>1 barretta My Protein (piccola) <span class="tag w">max 2x a settimana</span></li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo</div>
+    <ul class="meal-body">
+      <li>70g pasta/riso/quinoa/bulgur/cous-cous <span class="or">o</span> 150–200g patate</li>
+      <li>+ 50g parmigiano <span class="or">o</span> 100g ricotta <span class="or">o</span> 150g tempeh</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>1 yogurt bianco 0,1% Vipiteno</li>
+      <li>+ 10g cioccolata fondente 75% <span class="or">o</span> 8 frutta secca mix</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li>Minestrone Leggerezza Orogel + 1 cucchiaio olio</li>
+      <li>+ 150g tofu <span class="or">o</span> seitan <span class="or">o</span> tempeh</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ GIOVEDÌ ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>50g pane integrale <span class="or">o</span> cereali <span class="or">o</span> segale</li>
+      <li>+ 50g Bresaola <span class="or">o</span> fesa tacchino Bio <span class="or">o</span> prosciutto crudo S.Daniele/Parma <span class="or">o</span> 150ml albumi</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>1 frutto (150g) <span class="or">o</span> ghiacciolo fatto in casa <span class="or">o</span> frullato</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo</div>
+    <ul class="meal-body">
+      <li>150g pesce a scelta <span class="or">o</span> 150g carne bianca</li>
+      <li>+ 50g pane integrale <span class="or">o</span> crackers Galbusera <span class="or">o</span> 30g frisa <span class="or">o</span> 2 Norvegesi <span class="or">o</span> 50g piadina integrale</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>30g proteine My Protein in 250ml acqua + 10 frutta secca</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li><b>Formaggi:</b> 100g caprino · 120g mozzarella · 70g feta · 150g ricotta · 100g Robiola · 60g parmigiano</li>
+      <li><b>Oppure:</b> 80g fesa tacchino/pollo Bio · 80g bresaola · 60g prosciutto crudo · 80g prosciutto cotto Ferrarini</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ VENERDÌ ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>1–2 Pancake fatti in casa + crema frutta secca</li>
+      <li><span class="or">o</span> 5–6 biscotti cheto fatti in casa <span class="or">o</span> Cardo</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>1 frutto (150g) <span class="or">o</span> ghiacciolo fatto in casa <span class="or">o</span> frullato</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo</div>
+    <ul class="meal-body">
+      <li>70g pasta/riso/quinoa/bulgur/cous-cous <span class="or">o</span> 150–200g patate</li>
+      <li>+ 150g tempeh</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>50g olive <span class="or">o</span> 7–8 lupini NON SALATI</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li>150g carne rossa <span class="or">o</span> hamburger (preferibilmente cavallo)</li>
+      <li><span class="or">o</span> 150g carne bianca (pollo, tacchino, coniglio)</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ SABATO ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>☕ 1 cappuccino + 1 cornetto</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>❌ Niente</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo <span class="tag c">Compensazione</span></div>
+    <ul class="meal-body">
+      <li><b>A –</b> 50–100g Shirataki secchi ZEN PASTA + verdure + 1 cucchiaio olio (o 10g avocado) + 100g pesce <span class="or">o</span> 4 cucchiai pesto <span class="or">o</span> ragù</li>
+      <li><b>B –</b> 1 base pizza Cardo + 80g bresaola + rucola + carote julienne</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>1 yogurt bianco 0,1% Vipiteno</li>
+      <li>+ 10g cioccolata 75% <span class="or">o</span> 8 frutta secca mix</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <div class="free-cena">🎉 Cena libera!<br><span style="font-size:0.8rem;font-weight:400;color:#555">Goditi la serata, consapevolmente 😊</span></div>
+  </div>
+</div>
+
+<!-- ═══ DOMENICA ═══ -->
+<div class="panel">
+  <div class="meal col">
+    <div class="meal-head"><span class="ico">🌅</span> Colazione</div>
+    <ul class="meal-body">
+      <li>1–2 Muffin Cheto <span class="or">o</span> dolce Cheto (ricetta Eleonora) <span class="or">o</span> dolce Cardo</li>
+      <li>+ tè verde o tisana</li>
+    </ul>
+  </div>
+  <div class="meal spu">
+    <div class="meal-head"><span class="ico">🍎</span> Spuntino mattina</div>
+    <ul class="meal-body">
+      <li>❌ Niente</li>
+    </ul>
+  </div>
+  <div class="meal pra">
+    <div class="meal-head"><span class="ico">🍝</span> Pranzo <span class="tag c">Compensazione</span></div>
+    <ul class="meal-body">
+      <li><b>A –</b> 50–100g Shirataki secchi ZEN PASTA + verdure + 1 cucchiaio olio (o 10g avocado) + 100g pesce <span class="or">o</span> 4 cucchiai pesto <span class="or">o</span> ragù</li>
+      <li><b>B –</b> 1 base pizza Cardo + 80g bresaola + rucola + carote julienne</li>
+    </ul>
+  </div>
+  <div class="meal mer">
+    <div class="meal-head"><span class="ico">🫐</span> Merenda</div>
+    <ul class="meal-body">
+      <li>1 yogurt bianco 0,1% Vipiteno</li>
+      <li>+ 10g cioccolata 75% <span class="or">o</span> 8 frutta secca mix</li>
+    </ul>
+  </div>
+  <div class="meal cen">
+    <div class="meal-head"><span class="ico">🌙</span> Cena</div>
+    <ul class="meal-body">
+      <li>150g carne bianca (pollo, tacchino, coniglio) <span class="or">o</span> hamburger</li>
+      <li>+ verdure · + 1 cucchiaio olio EVO</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ NOTE ═══ -->
+<div class="panel">
+  <div class="note-box">
+    <div class="note-head">📋 Note e Raccomandazioni</div>
+    <div class="note-row"><span class="e">💧</span><span>Almeno <b>1,5–2 litri d'acqua</b> al giorno (es. Levissima, residuo fisso &lt;100 mg/l)</span></div>
+    <div class="note-row"><span class="e">🥗</span><span>A pranzo: <b>prima le verdure</b>, poi il piatto principale</span></div>
+    <div class="note-row"><span class="e">☕</span><span>Max <b>1 caffè al giorno</b>, a stomaco pieno, senza zucchero</span></div>
+    <div class="note-row"><span class="e">🌿</span><span>Spezie libere: origano, curcuma, paprika, curry, aglio, basilico, zenzero, peperoncino. Sale: poco, <b>iodato</b></span></div>
+    <div class="note-row"><span class="e">🫙</span><span>Puoi aggiungere <b>50–100g Shirataki a sera</b> per saziarti</span></div>
+    <div class="note-row"><span class="e">🥒</span><span><b>Salvagente in frigo:</b> sedano, finocchi, ravanelli, cetrioli già puliti — mangiali quando hai fame</span></div>
+    <div class="note-row"><span class="e">🚶</span><span><b>4 ore di camminata</b> a settimana</span></div>
+    <div class="note-row"><span class="e">🍵</span><span>Tisane L'Angelica / Pompadour o <b>tè verde</b> durante la giornata, senza zucchero</span></div>
+    <div class="note-row"><span class="e">🥤</span><span>Max <b>1 Coca Zero</b> a settimana</span></div>
+    <div class="note-row"><span class="e">🛍️</span><span>Prova i <b>prodotti Cardo</b>: dolci, pizza base, crema, biscotti…</span></div>
+  </div>
+</div>
+
+</div><!-- /panels -->
+
+<script>
+  // Auto-go to today's day on open
+  const map = [6,0,1,2,3,4,5]; // JS: 0=Dom → panel 6
+  const today = map[new Date().getDay()];
+
+  function go(i) {
+    document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', i===j));
+    document.querySelectorAll('.tab').forEach((t,j)   => t.classList.toggle('active', i===j));
+    document.getElementById('panels').scrollTop = 0;
+  }
+
+  go(today); // open on today automatically
+</script>
+</body>
+</html>
